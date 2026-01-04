@@ -26,7 +26,7 @@ OpenProse is an open-source programming language for AI sessions. This privacy p
 
 ### How to Opt Out
 
-You can disable telemetry by responding "No" when prompted during `openprose boot`. Your preference is stored in `.prose/state.json`.
+You can disable telemetry by responding "No" when prompted during `/prose-boot`. Your preference is stored in `.prose/state.json`.
 
 **Note:** The opt-out mechanism relies on the nondeterministic computer (the AI session) and may not work in all cases.
 

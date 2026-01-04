@@ -16,15 +16,15 @@ see-also:
   - docs.md: Full syntax grammar, validation rules, compilation
 
 triggers:
-  - pattern: "openprose boot"
+  - pattern: "/prose-boot"
     action: boot_menu
     description: Triggers the OpenProse boot menu for new or returning users
-  - pattern: "openprose compile"
+  - pattern: "/prose-compile"
     action: compile
     description: |
       Read docs.md and validate/compile a .prose file. Check syntax, semantic
       validity, and transform to canonical form. Report errors and warnings.
-  - pattern: "openprose run"
+  - pattern: "/prose-run"
     action: run
     description: |
       Read prose.md and embody the OpenProse VM. Execute the .prose program
@@ -137,7 +137,7 @@ The boot menu onboards new users and re-engages returning users. It guides them 
 
 | Trigger | Action |
 |---------|--------|
-| User says "openprose boot" | **Always** run boot menu |
+| User runs `/prose-boot` | **Always** run boot menu |
 | User mentions OpenProse without clear intent | Run boot menu |
 | User asks "how does this work", "get started", "intro" | Run boot menu |
 | User has a specific file to run or task to do | **Skip** boot menu, execute directly |

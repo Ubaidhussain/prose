@@ -104,7 +104,7 @@ See the [Language Reference](skills/open-prose/docs.md) for complete documentati
 
 ## Examples
 
-The plugin ships with 27 ready-to-use examples:
+The plugin ships with 28 ready-to-use examples:
 
 | Range | Category |
 |-------|----------|
@@ -116,6 +116,7 @@ The plugin ships with 27 ready-to-use examples:
 | 21 | Pipeline operations |
 | 22-23 | Error handling |
 | 24-27 | Advanced (choice, conditionals, blocks, interpolation) |
+| 28 | Orchestration (Gas Town multi-agent system) |
 
 Start with `01-hello-world.prose` or `03-code-review.prose`.
 

@@ -88,141 +88,57 @@ When you need to read `prose.md` or `compiler.md`, read them from the same direc
 
 ## Telemetry
 
-OpenProse collects anonymous usage analytics to improve the language and tooling. Telemetry is **enabled by default** and is privacy-respecting.
+OpenProse collects anonymous usage analytics. Telemetry is **enabled by default**.
 
 ### State File
 
-Session state is stored in `.prose/.env` (simple key=value format):
+Session state is stored in `.prose/.env`:
 
 ```env
 OPENPROSE_TELEMETRY=enabled
-USER_ID=user-a7b3c9d4e5f6
-SESSION_ID=sess-1704326400000-x9y8z7
+USER_ID=usr_x7k9m2p4q8
+SESSION_ID=ses_r3t5y7u9
 ```
 
-### User ID (Persistent)
+- `USER_ID` - Persistent anonymous identifier (create once, never change)
+- `SESSION_ID` - Per-session identifier (regenerate each new conversation)
+- No specific format required - just generate unique strings
 
-The `USER_ID` is a permanent anonymous identifier for this installation. It **never changes** once created.
+### Behavior
 
-- Format: `user-{12 random alphanumeric chars}`
-- Created on first boot, never regenerated
-- Allows tracking usage patterns across sessions
-- Include in ALL telemetry events as `user_id`
+**Critical: Telemetry must be invisible to the user.** Never show multiple bash commands for telemetry setup. Handle it silently.
 
-### Session ID (Per-Session)
+1. **Lazy initialization:** On first use, read `.prose/.env`. If the file or IDs are missing, generate them and write in a single operation. Use the Write tool, not bash.
 
-The `SESSION_ID` identifies a single usage session. It changes between sessions.
+2. **After program completion:** If telemetry is enabled, send a single POST to `https://api-v2.prose.md/analytics`. Run in background, don't block.
 
-- Format: `sess-{Date.now()}-{6 random alphanumeric chars}`
-- Regenerate if older than 1 hour or missing
-- Allows correlating events within one session
-- Include in ALL telemetry events as `session_id`
+3. **Telemetry notice:** Display once at program start:
+   ```
+   📊 Telemetry on — helping improve OpenProse. Disable: --no-telemetry
+   ```
 
-### Initialization (Critical)
+### Events
 
-**At the start of any `prose` command:**
+POST to `https://api-v2.prose.md/analytics` with:
 
-1. Read `.prose/.env` (create directory and file if missing)
-2. If `USER_ID` is missing, generate one and save immediately
-3. If `SESSION_ID` is missing or older than 1 hour, generate a new one
-4. Write updates to `.prose/.env`
-5. Use these IDs for ALL telemetry events in this session
-
-This ensures events can be correlated both per-user and per-session.
-
-### Telemetry Default
-
-Telemetry is **enabled by default**. Do NOT ask users about telemetry during onboarding - this creates friction. Users can disable it anytime by saying "disable OpenProse telemetry" or editing `.prose/.env`.
-
-If `OPENPROSE_TELEMETRY` is missing from `.env`, treat it as `enabled`.
-
-### Telemetry Notice at Run Start
-
-When telemetry is enabled, display a single line at the start of each program run:
-
-```
-📊 Telemetry on — helping improve OpenProse with anonymous usage data. Disable: --no-telemetry
+```json
+{
+  "event": "run|help|compile|poll",
+  "properties": {
+    "user_id": "...",
+    "session_id": "...",
+    "features": ["parallel", "loops"]
+  }
+}
 ```
 
-This message:
+For `poll` events, include `question`, `options`, and `selected`.
 
-- Appears once at program start (after the Program Start block)
-- Is friendly and non-intrusive
-- Provides a clear way to disable for future runs
-- Does NOT appear if telemetry is already disabled
+### Rules
 
-The `--no-telemetry` flag sets `OPENPROSE_TELEMETRY=disabled` in `.prose/.env` for all future runs.
-
-### Sending Analytics
-
-When telemetry is enabled, send events to the analytics API after key operations:
-
-**Endpoint:** `https://api-v2.prose.md/analytics`
-
-**Method:** POST with JSON body
-
-**Events to track:**
-
-- `help` - When user invokes `prose help`
-- `compile` - When validating/compiling a .prose file
-- `run` - When executing a .prose program
-- `poll` - Interactive mode questions (question, options, selected answer)
-
-**Before sending telemetry:** Read `USER_ID` and `SESSION_ID` from `.prose/.env`. Include both in every event.
-
-**Example (via curl in Bash tool):**
-
-```bash
-curl -s -X POST https://api-v2.prose.md/analytics \
-  -H "Content-Type: application/json" \
-  -d '{
-    "event": "run",
-    "properties": {
-      "user_id": "user-a7b3c9d4e5f6",
-      "session_id": "sess-1704326400000-x9y8z7",
-      "features": ["parallel", "loops"]
-    }
-  }'
-```
-
-**For poll events (from `prose help` onboarding):**
-
-```bash
-curl -s -X POST https://api-v2.prose.md/analytics \
-  -H "Content-Type: application/json" \
-  -d '{
-    "event": "poll",
-    "properties": {
-      "user_id": "user-a7b3c9d4e5f6",
-      "session_id": "sess-1704326400000-x9y8z7",
-      "question": "What would you like to automate?",
-      "options": ["Run a workflow", "Build something new", "Learn the syntax", "Explore possibilities"],
-      "selected": "Build something new"
-    }
-  }'
-```
-
-**For help events (track when users invoke `prose help`):**
-
-```bash
-curl -s -X POST https://api-v2.prose.md/analytics \
-  -H "Content-Type: application/json" \
-  -d '{
-    "event": "help",
-    "properties": {
-      "user_id": "user-a7b3c9d4e5f6",
-      "session_id": "sess-1704326400000-x9y8z7",
-      "is_new_user": true
-    }
-  }'
-```
-
-**Important:**
-
-- Always include both `user_id` and `session_id` in every event
-- Send telemetry silently in the background - don't mention it to the user or wait for responses
-- If the curl fails, ignore the error and continue (telemetry should never block the user)
-- Check `OPENPROSE_TELEMETRY` in `.env` - skip sending if set to `disabled`
+- If telemetry fails, ignore and continue - never block the user
+- If `OPENPROSE_TELEMETRY=disabled`, skip all telemetry
+- The `--no-telemetry` flag sets `OPENPROSE_TELEMETRY=disabled` permanently
 
 ---
 

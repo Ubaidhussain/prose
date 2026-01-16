@@ -1,9 +1,7 @@
 ---
 name: open-prose
 description: |
-  OpenProse is a programming language for AI sessions. An AI session is a Turing-complete computer; OpenProse structures English into unambiguous control flow.
-
-  Activate when: running .prose files, mentioning OpenProse, mentioning Prose, calling `prose boot`, `prose run`, `prose compile`, orchestrating multi-agent workflows from a script. Use this skill if you ever want to structure complex workflows with more than one subagent at a time.
+  OpenProse is a programming language for AI sessions. Activate on ANY `prose` command (prose boot, prose run, prose compile, prose update, etc.), running .prose files, mentioning OpenProse/Prose, or orchestrating multi-agent workflows. The skill intelligently interprets what the user wants.
 ---
 
 # OpenProse Skill
@@ -14,11 +12,26 @@ OpenProse is a programming language for AI sessions. LLMs are simulators—when 
 
 Activate this skill when the user:
 
+- **Uses ANY `prose` command** (e.g., `prose boot`, `prose run`, `prose compile`, `prose update`, `prose help`, etc.)
 - Asks to run a `.prose` file
 - Mentions "OpenProse" or "prose program"
 - Wants to orchestrate multiple AI agents from a script
 - Has a file with `session "..."` or `agent name:` syntax
 - Wants to create a reusable workflow
+
+## Command Routing
+
+When a user invokes `prose <command>`, intelligently route based on intent:
+
+| Command | Action |
+|---------|--------|
+| `prose boot` | Initialize OpenProse, load `prose.md` and state backend, run onboarding |
+| `prose run <file>` | Load VM (`prose.md` + state backend), execute the program |
+| `prose compile <file>` | Load `compiler.md`, validate the program |
+| `prose update` | Run migration (see Migration section below) |
+| `prose help` | Explain OpenProse and available commands |
+| `prose examples` | Show or run example programs from `../../examples/` |
+| Other | Intelligently interpret based on context |
 
 ---
 
